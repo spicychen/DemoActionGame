@@ -18,6 +18,11 @@ public class LoadSceneManager : MonoBehaviour
         SceneManager.LoadScene(current_scene_index + 1);
     }
 
+    public void LoadNextScene(int next_i)
+    {
+        SceneManager.LoadScene(current_scene_index + next_i);
+    }
+
     public void GoToMainMenu()
     {
         SceneManager.LoadScene("MainMenu");
