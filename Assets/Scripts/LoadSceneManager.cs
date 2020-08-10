@@ -28,6 +28,11 @@ public class LoadSceneManager : MonoBehaviour
         SceneManager.LoadScene("MainMenu");
     }
 
+    public void GoToLoginScene()
+    {
+        SceneManager.LoadScene("LoginScene");
+    }
+
     // Update is called once per frame
     void Update()
     {

@@ -13,16 +13,20 @@ public class MenuManager : MonoBehaviour
     public Button[] character_selection;
 
     public Button shop_button;
-    public Button leaderboard;
+    public Button leaderboard_button;
 
     public GameObject levels_panel;
     public GameObject characters_panel;
     public GameObject shop_panel;
+    public GameObject leaderboard_panel;
 
     public PlayerProfile player_profile;
     public LoadSceneManager load_scene_manager;
+    public AuthenticateHelper AuthenticateHelper;
+    public PlayFabHelper playFabHelper;
 
     public Shop shop;
+    public Leaderboard leaderboard;
 
     // Start is called before the first frame update
     void Start()
@@ -30,6 +34,7 @@ public class MenuManager : MonoBehaviour
         levels_panel.SetActive(false);
         characters_panel.SetActive(false);
         shop_panel.SetActive(false);
+        leaderboard_panel.SetActive(false);
 
         start_game.onClick.AddListener(OnStartGameClicked);
         for(int i=0; i<level_selection.Length; i++)
@@ -46,6 +51,14 @@ public class MenuManager : MonoBehaviour
         }
 
         shop_button.onClick.AddListener(OnShopButtonClicked);
+        leaderboard_button.onClick.AddListener(OnLeaderboardButtonClicked);
+
+
+    }
+
+    private void OnMainMenuLoad()
+    {
+
     }
 
     private void OnStartGameClicked()
@@ -70,6 +83,11 @@ public class MenuManager : MonoBehaviour
 
     private void OnShopButtonClicked()
     {
+        if (!PlayFabClientAPI.IsClientLoggedIn())
+        {
+            AuthenticateHelper.AuthenticateRememberMeId();
+            return;
+        }
         PlayFabClientAPI.GetCatalogItems(new GetCatalogItemsRequest
         {
             CatalogVersion = "main"
@@ -77,7 +95,7 @@ public class MenuManager : MonoBehaviour
         (GetCatalogItemsResult result) =>
         {
             shop.SetItems(result.Catalog);
-            shop.ShowItems();
+            //shop.ShowItems();
         },
         (PlayFabError error) =>
         {
@@ -86,9 +104,44 @@ public class MenuManager : MonoBehaviour
         ) ;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnLeaderboardButtonClicked()
     {
+
+        if (!PlayFabClientAPI.IsClientLoggedIn())
+        {
+            AuthenticateHelper.AuthenticateRememberMeId();
+            return;
+        }
+        PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
+        {
+            StatisticName = "DailyScore",
+            MaxResultsCount = 7
+        },
+        (GetLeaderboardResult result) =>
+        {
+            PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
+            {
+                StatisticName = "WeeklyScore",
+                MaxResultsCount = 7
+            },
+            (GetLeaderboardResult w_result) =>
+            {
+                leaderboard.SetRows(result.Leaderboard, w_result.Leaderboard);
+            },
+            (PlayFabError w_error) =>
+            {
+                Debug.Log(w_error.GenerateErrorReport());
+
+            }
+
+            );
+        },
+        (PlayFabError error) =>
+        {
+            Debug.Log(error.GenerateErrorReport());
+        }
         
+        );
     }
+
 }
