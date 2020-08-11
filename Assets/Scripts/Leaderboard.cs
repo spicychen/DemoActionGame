@@ -17,8 +17,8 @@ public class Leaderboard : MonoBehaviour
     {
         this.daily_entries = daily_entries;
         this.weekly_entries = weekly_entries;
-        ShowScores();
         leaderboard_panel.SetActive(true);
+        ShowScores();
     }
 
     public void ShowScores()

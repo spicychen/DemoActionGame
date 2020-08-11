@@ -17,8 +17,8 @@ public class Shop : MonoBehaviour
         items = catalog;
         converted_items = new List<Item>();
         ConvertItems();
-        ShowItems();
         shop_panel.SetActive(true);
+        ShowItems();
     }
 
     public void ConvertItems()

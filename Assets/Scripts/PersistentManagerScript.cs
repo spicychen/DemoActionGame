@@ -8,7 +8,7 @@ public class PersistentManagerScript : MonoBehaviour
 
     public int current_level;
 
-    public Charater selected_character;
+    public Character selected_character;
 
     private void Awake()
     {

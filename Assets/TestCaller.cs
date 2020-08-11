@@ -11,14 +11,30 @@ public class TestCaller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        helper.StartGame(
-            5,
-            "E059EE26FCE686BD",
+        helper.ConvertFPToGD(
+            1,
             (ExecuteCloudScriptResult result) =>
             {
                 Debug.Log(JsonUtility.ToJson(result, true));
                 Debug.Log(result.FunctionResult);
             });
+        //helper.StartGame(
+        //    1,
+        //    "E059EE26FCE686BD",
+        //    (ExecuteCloudScriptResult result) =>
+        //    {
+        //        Debug.Log(JsonUtility.ToJson(result, true));
+        //        Debug.Log(result.FunctionResult);
+        //    });
+        //helper.CompleteGame(
+        //    1,
+        //    13,
+        //    new string[] { "attack_up", "rbarab" },
+        //    (ExecuteCloudScriptResult result) =>
+        //    {
+        //        Debug.Log(JsonUtility.ToJson(result, true));
+        //        Debug.Log(result.FunctionResult);
+        //    });
         //helper.PurchaseItem(
         //    new PurchaseItemRequest { 
         //        ItemId = "speed_up",

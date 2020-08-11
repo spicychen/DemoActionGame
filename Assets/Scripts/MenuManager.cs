@@ -14,15 +14,21 @@ public class MenuManager : MonoBehaviour
 
     public Button shop_button;
     public Button leaderboard_button;
+    public Button expand_button;
+    public Button shrink_button;
 
     public GameObject levels_panel;
     public GameObject characters_panel;
     public GameObject shop_panel;
     public GameObject leaderboard_panel;
 
+    public Animator player_profile_animator;
+
+    public Image player_avatar;
+    public Text player_name;
+
     public PlayerProfile player_profile;
     public LoadSceneManager load_scene_manager;
-    public AuthenticateHelper AuthenticateHelper;
     public PlayFabHelper playFabHelper;
 
     public Shop shop;
@@ -52,13 +58,61 @@ public class MenuManager : MonoBehaviour
 
         shop_button.onClick.AddListener(OnShopButtonClicked);
         leaderboard_button.onClick.AddListener(OnLeaderboardButtonClicked);
+        expand_button.onClick.AddListener(OnExpandClicked);
+        shrink_button.onClick.AddListener(OnShrinkClicked);
 
-
+        OnMainMenuLoad();
     }
 
     private void OnMainMenuLoad()
     {
+        playFabHelper.GetPlayerProfile((GetPlayerProfileResult result) => {
+            StartCoroutine(SetImage(result.PlayerProfile.AvatarUrl));
+            player_name.text = result.PlayerProfile.DisplayName;
+            player_profile.player_name = result.PlayerProfile.DisplayName;
+            player_profile.player_avatar_url = result.PlayerProfile.AvatarUrl;
+        });
+    }
 
+    IEnumerator SetImage(string url)
+    {
+        WWW www = new WWW(url);
+        yield return www;
+
+        Texture2D texture = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
+        www.LoadImageIntoTexture(texture);
+        player_avatar.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+
+        //player_avatar.material.mainTexture = www.texture;
+        //www.LoadImageIntoTexture(player_avatar);
+        www.Dispose();
+        www = null;
+    }
+
+    private void OnExpandClicked()
+    {
+        playFabHelper.GetPlayerInventory(
+            (GetUserInventoryResult result) =>
+            {
+                player_profile.player_inventory = Item.ConvertToItems(result.Inventory);
+                player_profile.SetItems();
+                player_profile.player_fighting_points = result.VirtualCurrency["FP"];
+                player_profile.player_gold = result.VirtualCurrency["GD"];
+                player_profile_animator.SetTrigger("drag");
+            }
+            );
+        playFabHelper.GetPlayerCharacters(
+            (ListUsersCharactersResult result) =>
+            {
+                player_profile.player_characters = Character.ConvertToCharacters(result.Characters);
+                player_profile.SetCharacters();
+            }
+            );
+    }
+
+    private void OnShrinkClicked()
+    {
+        player_profile_animator.SetTrigger("drag");
     }
 
     private void OnStartGameClicked()
@@ -74,8 +128,6 @@ public class MenuManager : MonoBehaviour
 
     private void OnCharacterButtonClicked(int i_character)
     {
-        //Debug.Log(i_character);
-        //Debug.Log(PersistentManagerScript.Instance.current_level);
         PersistentManagerScript.Instance.selected_character = player_profile.player_characters[i_character];
         load_scene_manager.LoadNextScene(PersistentManagerScript.Instance.current_level);
 
@@ -83,65 +135,23 @@ public class MenuManager : MonoBehaviour
 
     private void OnShopButtonClicked()
     {
-        if (!PlayFabClientAPI.IsClientLoggedIn())
-        {
-            AuthenticateHelper.AuthenticateRememberMeId();
-            return;
-        }
-        PlayFabClientAPI.GetCatalogItems(new GetCatalogItemsRequest
-        {
-            CatalogVersion = "main"
-        },
+        
+        playFabHelper.GetCatalogItems(
         (GetCatalogItemsResult result) =>
         {
             shop.SetItems(result.Catalog);
-            //shop.ShowItems();
-        },
-        (PlayFabError error) =>
-        {
-            Debug.Log(error.GenerateErrorReport());
         }
         ) ;
     }
 
     private void OnLeaderboardButtonClicked()
     {
-
-        if (!PlayFabClientAPI.IsClientLoggedIn())
-        {
-            AuthenticateHelper.AuthenticateRememberMeId();
-            return;
-        }
-        PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
-        {
-            StatisticName = "DailyScore",
-            MaxResultsCount = 7
-        },
-        (GetLeaderboardResult result) =>
-        {
-            PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
-            {
-                StatisticName = "WeeklyScore",
-                MaxResultsCount = 7
-            },
-            (GetLeaderboardResult w_result) =>
+        playFabHelper.GetDailyAndWeeklyLeaderboard(
+            (GetLeaderboardResult result,GetLeaderboardResult w_result) =>
             {
                 leaderboard.SetRows(result.Leaderboard, w_result.Leaderboard);
-            },
-            (PlayFabError w_error) =>
-            {
-                Debug.Log(w_error.GenerateErrorReport());
-
             }
-
             );
-        },
-        (PlayFabError error) =>
-        {
-            Debug.Log(error.GenerateErrorReport());
-        }
-        
-        );
     }
 
 }

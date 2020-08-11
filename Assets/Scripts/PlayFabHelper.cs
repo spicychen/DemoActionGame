@@ -90,7 +90,7 @@ public class PlayFabHelper : MonoBehaviour
         
     }
 
-    public void GetDailyAndWeeklyLeaderboard(System.Action<GetLeaderboardResult> callback = null)
+    public void GetDailyAndWeeklyLeaderboard(System.Action<GetLeaderboardResult, GetLeaderboardResult> callback = null)
     {
         ExecuteAfterAuthenticate(() => { 
                     PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
@@ -109,7 +109,7 @@ public class PlayFabHelper : MonoBehaviour
                         {
                             if (callback != null)
                             {
-                                callback.Invoke(result);
+                                callback.Invoke(result,w_result);
                             }
                         },
                         LogError
@@ -247,7 +247,7 @@ public class PlayFabHelper : MonoBehaviour
         });
     }
 
-    public void CompleteGame(int level, int finalScore, System.Action<ExecuteCloudScriptResult> callback = null)
+    public void CompleteGame(int level, int finalScore, string[] itemUsed, System.Action<ExecuteCloudScriptResult> callback = null)
     {
 
         ExecuteAfterAuthenticate(() =>
@@ -260,7 +260,8 @@ public class PlayFabHelper : MonoBehaviour
                 new
                 {
                     currentPlayLevel = level,
-                    score = finalScore
+                    score = finalScore,
+                    usedItems = itemUsed,
                 }
             },
             (ExecuteCloudScriptResult result) =>
