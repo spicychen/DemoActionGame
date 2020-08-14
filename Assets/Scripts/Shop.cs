@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PlayFab.ClientModels;
 using System;
+using UnityEngine.UI;
 
 public class Shop : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class Shop : MonoBehaviour
 
     public GameObject shop_panel;
     public ItemSlot[] itemSlots;
+
+    public PlayFabHelper playFabHelper;
 
     public void SetItems(List<CatalogItem> catalog)
     {
@@ -49,8 +52,28 @@ public class Shop : MonoBehaviour
         {
             for(int x=0; x < converted_items.Count; x++)
             {
+                string item_id = converted_items[x].item_id;
+                int item_price = converted_items[x].price_gold;
                 itemSlots[x].SetSlotItem(converted_items[x].img_path, converted_items[x].name, converted_items[x].price_gold);
+                string message = String.Format("{0} will cost {1} gold",converted_items[x].name, converted_items[x].price_gold);
+                itemSlots[x].SetClickable(message, 
+                    ()=> {
+                        playFabHelper.PurchaseItem(
+                new PurchaseItemRequest
+                {
+                    ItemId = item_id,
+                    Price = item_price,
+                    VirtualCurrency = "GD"
+                },
+                (PurchaseItemResult result) =>
+                {
+                    FindObjectOfType<MessageWindow>().ShowSuccess("Purchase successful");
+                });
+                    },
+                    "Yes");
             }
         }
     }
+
+
 }

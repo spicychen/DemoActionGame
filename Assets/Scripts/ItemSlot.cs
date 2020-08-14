@@ -9,6 +9,7 @@ public class ItemSlot : MonoBehaviour
     public Image item_img;
     public Text item_name;
     public Text item_price;
+    public Button item_button;
 
     public bool is_sell;
 
@@ -16,6 +17,7 @@ public class ItemSlot : MonoBehaviour
     void Awake()
     {
         HideSlotItem();
+        //item_button = GetComponent<Button>();
     }
 
     public void HideSlotItem()
@@ -42,6 +44,17 @@ public class ItemSlot : MonoBehaviour
         this.item_name.text = item_name;
         this.item_price.text = item_price.ToString();
         ShowSlotItem();
+    }
+
+    public void SetClickable(string msg,System.Action callback=null, string button_text = "OK")
+    {
+        item_button.onClick.AddListener(()=> {
+            MessageWindow mw = FindObjectOfType<MessageWindow>();
+            if (mw != null)
+            {
+                mw.ShowMessage(msg, callback, button_text);
+            }
+        });
     }
 
 }

@@ -198,7 +198,7 @@ public class PlayFabHelper : MonoBehaviour
         });
     }
 
-    public void UseCharacterItem(string item_id, string character_name, System.Action<GrantCharacterToUserResult> callback)
+    public void UseCharacterItem(string item_id, string character_name, System.Action<GrantCharacterToUserResult> callback, System.Action<PlayFabError> error_callback=null)
     {
         ExecuteAfterAuthenticate(() =>
         {
@@ -216,7 +216,14 @@ public class PlayFabHelper : MonoBehaviour
                     }
 
                 },
-                LogError
+            (PlayFabError err) =>
+            {
+                if (error_callback != null)
+                {
+                    error_callback.Invoke(err);
+                }
+                    LogError(err);
+            }
                 );
         });
     }
@@ -242,7 +249,7 @@ public class PlayFabHelper : MonoBehaviour
                     callback.Invoke(result);
                 }
             },
-            LogError
+                LogError
             );
         });
     }

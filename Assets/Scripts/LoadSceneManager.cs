@@ -33,6 +33,11 @@ public class LoadSceneManager : MonoBehaviour
         SceneManager.LoadScene("LoginScene");
     }
 
+    public void GoToGameOverScene()
+    {
+        SceneManager.LoadScene("GameOver");
+    }
+
     // Update is called once per frame
     void Update()
     {

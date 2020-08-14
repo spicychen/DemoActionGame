@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using PlayFab;
+using PlayFab.ClientModels;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -47,6 +49,8 @@ public class PlayerProfile : MonoBehaviour
     public Text player_fighting_points_ui;
     public Text player_gold_ui;
 
+    public PlayFabHelper playFabHelper;
+
     private void Start()
     {
         ShowItems();
@@ -60,12 +64,70 @@ public class PlayerProfile : MonoBehaviour
         item_slot_group.SetActive(true);
         if (player_inventory.Count <= itemSlots.Length)
         {
-            for (int x = 0; x < player_inventory.Count; x++)
+            for (int x = 0; x < itemSlots.Length; x++)
             {
+                if(x< player_inventory.Count)
+                {
+
                 itemSlots[x].SetSlotItem(player_inventory[x].img_path, player_inventory[x].name, player_inventory[x].remaining_uses);
+                }
+                else
+                {
+                    itemSlots[x].HideSlotItem();
+                }
+
+                //switch (player_inventory[x].item_id)
+                //{
+                //    case "default_man01":
+                //    case "powerful_man01":
+
+                //        string item_id = player_inventory[x].item_id;
+                //        string message = string.Format("Are you sure you want to use {0}", player_inventory[x].name);
+                //        ItemSlot current_slot = itemSlots[x];
+                //        current_slot.SetClickable(message,()=>
+                //        {
+                //            playFabHelper.UseCharacterItem(
+                //                item_id,
+                //                item_id,
+                //                (GrantCharacterToUserResult result) =>
+                //                {
+                //                    FindObjectOfType<MessageWindow>().ShowSuccess("Redeem successful");
+                //                    current_slot.gameObject.SetActive(false);
+                //                }
+                //                );
+                //        });
+                //        break;
+                //}
             }
         }
         item_slot_group.SetActive(current_active);
+    }
+
+    public void RedeemCharacters(string character_id)
+    {
+        playFabHelper.UseCharacterItem(
+                                character_id,
+                                character_id,
+                                (GrantCharacterToUserResult g_result) =>
+                                {
+                                    FindObjectOfType<MessageWindow>().ShowSuccess("Redeem successful");
+
+                                    playFabHelper.GetPlayerInventory(
+                                        (GetUserInventoryResult result) =>
+                                        {
+                                            this.player_inventory = Item.ConvertToItems(result.Inventory);
+                                            this.SetItems();
+                                            this.player_fighting_points = result.VirtualCurrency["FP"];
+                                            this.player_gold = result.VirtualCurrency["GD"];
+                                        }
+                                        );
+                                },
+                                (PlayFabError err) =>
+                                {
+                                    FindObjectOfType<MessageWindow>().ShowSuccess("You do not Have This character!","Fine");
+                                }
+                                );
+
     }
 
     public void SetCharacters()
@@ -74,9 +136,17 @@ public class PlayerProfile : MonoBehaviour
         character_slot_group.SetActive(true);
         if (player_characters.Count <= characterSlots.Length)
         {
-            for (int x = 0; x < player_characters.Count; x++)
+            for (int x = 0; x < characterSlots.Length; x++)
             {
+                if(x< player_characters.Count)
+                {
+
                 characterSlots[x].SetSlotItem(player_characters[x].img_path, player_characters[x].character_type, 1);
+                }
+                else
+                {
+                    characterSlots[x].HideSlotItem();
+                }
             }
         }
         character_slot_group.SetActive(current_active);

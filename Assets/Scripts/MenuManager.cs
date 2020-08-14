@@ -10,12 +10,13 @@ public class MenuManager : MonoBehaviour
 
     public Button start_game;
     public Button[] level_selection;
-    public Button[] character_selection;
 
     public Button shop_button;
     public Button leaderboard_button;
     public Button expand_button;
     public Button shrink_button;
+    public InputField convert_amount;
+    public Button convert_button;
 
     public GameObject levels_panel;
     public GameObject characters_panel;
@@ -30,6 +31,7 @@ public class MenuManager : MonoBehaviour
     public PlayerProfile player_profile;
     public LoadSceneManager load_scene_manager;
     public PlayFabHelper playFabHelper;
+    public CharacterSelection characterSelection;
 
     public Shop shop;
     public Leaderboard leaderboard;
@@ -37,6 +39,8 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        convert_button.onClick.AddListener(ConvertFPToGD);
+
         levels_panel.SetActive(false);
         characters_panel.SetActive(false);
         shop_panel.SetActive(false);
@@ -48,12 +52,6 @@ public class MenuManager : MonoBehaviour
             int x = i;
             level_selection[x].onClick.AddListener(()=> { OnLevelButtonClicked(x+1);Debug.Log(x); });
             
-        }
-        for(int i=0; i < character_selection.Length; i++)
-        {
-            int x = i;
-            character_selection[x].onClick.AddListener(()=> { OnCharacterButtonClicked(x);Debug.LogFormat("charx: {0}", x); }) ;
-
         }
 
         shop_button.onClick.AddListener(OnShopButtonClicked);
@@ -123,15 +121,24 @@ public class MenuManager : MonoBehaviour
     private void OnLevelButtonClicked(int level)
     {
         PersistentManagerScript.Instance.current_level = level;
+
         characters_panel.SetActive(true);
+        playFabHelper.GetPlayerCharacters(
+            (ListUsersCharactersResult result) =>
+            {
+                player_profile.player_characters = Character.ConvertToCharacters(result.Characters);
+                player_profile.SetCharacters();
+                characterSelection.SetItems();
+            }
+            );
     }
 
-    private void OnCharacterButtonClicked(int i_character)
-    {
-        PersistentManagerScript.Instance.selected_character = player_profile.player_characters[i_character];
-        load_scene_manager.LoadNextScene(PersistentManagerScript.Instance.current_level);
+    //private void OnCharacterButtonClicked(int i_character)
+    //{
+    //    PersistentManagerScript.Instance.selected_character = player_profile.player_characters[i_character];
+    //    load_scene_manager.LoadNextScene(PersistentManagerScript.Instance.current_level);
 
-    }
+    //}
 
     private void OnShopButtonClicked()
     {
@@ -154,4 +161,23 @@ public class MenuManager : MonoBehaviour
             );
     }
 
+    public void ConvertFPToGD()
+    {
+        playFabHelper.ConvertFPToGD(int.Parse(convert_amount.text), (ExecuteCloudScriptResult result) =>
+        {
+            CloudScriptResult custom_result = JsonUtility.FromJson<CloudScriptResult>(result.FunctionResult.ToString());
+            //Debug.Log(custom_result.status);
+            //Debug.Log(custom_result.message);
+            //Debug.Log(result.FunctionResult.GetType());
+            //Debug.Log(result.FunctionResult.ToString());
+            //Debug.Log(JsonUtility.FromJson<CloudScriptResult>(result.FunctionResult.ToString()));
+            if (custom_result.status == "Success")
+            {
+                FindObjectOfType<MessageWindow>().ShowSuccess(custom_result.message);
+            }else if(custom_result.status == "NotEnoughFP")
+            {
+                FindObjectOfType<MessageWindow>().ShowSuccess(custom_result.message);
+            }
+        });
+    }
 }
