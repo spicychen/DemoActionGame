@@ -19,9 +19,11 @@ public class EndGameManager : MonoBehaviour
             playFabHelper.CompleteGame(
                 PersistentManagerScript.Instance.current_level,
                 PersistentManagerScript.Instance.score,
-                PersistentManagerScript.Instance.item_used.ToArray(),
+                PersistentManagerScript.Instance.item_used,
                 (ExecuteCloudScriptResult result) =>
                 {
+                    Debug.Log(JsonUtility.ToJson(result, true));
+                    Debug.Log(result.FunctionResult);
                     CloudScriptResult custom_result = JsonUtility.FromJson<CloudScriptResult>(result.FunctionResult.ToString());
 
                     if (custom_result.status == "Success")
@@ -30,7 +32,7 @@ public class EndGameManager : MonoBehaviour
                     }
                     else
                     {
-                        FindObjectOfType<MessageWindow>().ShowSuccess(custom_result.message,"OH NO!");
+                        FindObjectOfType<MessageWindow>().ShowSuccess(custom_result.message, "OH NO!");
                     }
                 });
 

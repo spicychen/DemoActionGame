@@ -25,6 +25,10 @@ public class CharaterController : MonoBehaviour
     private Rigidbody rb;
     private Animator anime;
 
+        private int attack_up_rate = 1;
+        private int defense_up_rate = 1;
+        private float speed_up_rate = 1f;
+
         private int received_attack;
 
     const float MOVE_THRE=0.25f;
@@ -114,7 +118,7 @@ public class CharaterController : MonoBehaviour
     {
         movement.Set(h, 0f, 0f);
         movement = movement.normalized;
-        movement = movement * movement_speed * Time.deltaTime;
+        movement = movement * movement_speed * speed_up_rate * Time.deltaTime;
         rb.MovePosition(transform.position + movement);
     }
 
@@ -127,7 +131,7 @@ public class CharaterController : MonoBehaviour
             EnemyController e = enemy.GetComponent<EnemyController>();
             if (e != null)
             {
-                e.TakeDmg(a*attack);
+                e.TakeDmg(a*attack*attack_up_rate);
 
             }
         }
@@ -145,7 +149,7 @@ public class CharaterController : MonoBehaviour
     public void CalculateDmg(int dmg_blocked)
     {
 
-            int dmg = received_attack - this.defense - dmg_blocked;
+            int dmg = received_attack - (this.defense + dmg_blocked) * defense_up_rate;
             if (dmg < 0)
             {
                 dmg = 0;
@@ -158,6 +162,29 @@ public class CharaterController : MonoBehaviour
                 FindObjectOfType<GameController>().GameOver();
             }
     }
+
+        public void UseAttackUp()
+        {
+            attack_up_rate = 2;
+        }
+        public void UseDefenseUp()
+        {
+            defense_up_rate = 2;
+        }
+        public void UseSpeedUp()
+        {
+            speed_up_rate = 1.5f;
+        }
+
+        public void DrinkPotion()
+        {
+            int total_health = health + 50;
+            if (total_health > max_health)
+            {
+                total_health = max_health;
+            }
+            health = total_health;
+        }
 
 
     }

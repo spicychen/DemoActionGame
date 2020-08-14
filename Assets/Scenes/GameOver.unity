@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 172976fb61cfe744d9b1428a8093741e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playFabHelper: {fileID: 0}
+  playFabHelper: {fileID: 1477127765}
   score_ui: {fileID: 1664072453}
 --- !u!4 &167796938
 Transform:

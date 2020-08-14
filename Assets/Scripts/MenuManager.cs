@@ -131,7 +131,15 @@ public class MenuManager : MonoBehaviour
                 characterSelection.SetItems();
             }
             );
-    }
+
+
+        playFabHelper.GetPlayerInventory(
+            (GetUserInventoryResult result) =>
+            {
+                PersistentManagerScript.Instance.player_inventory = Item.ConvertToItems(result.Inventory);
+
+            });
+        }
 
     //private void OnCharacterButtonClicked(int i_character)
     //{

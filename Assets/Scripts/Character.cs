@@ -38,7 +38,7 @@ public class Character
             foreach (CharacterResult character in Characters)
             {
                 var img_path = String.Format("CharacterSprites/{0}", character.CharacterType);
-                Debug.Log(img_path);
+                //Debug.Log(img_path);
                 converted_characters.Add(new Character(img_path, character.CharacterId, character.CharacterType));
             }
         }

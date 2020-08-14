@@ -33,7 +33,7 @@ public class PlayFabHelper : MonoBehaviour
 
             (LoginResult result) =>
             {
-                
+                Debug.LogFormat("CustomId:{0}", RememberMeId);
                 Debug.LogFormat("Logged In as: {0}", result.PlayFabId);
                 if(callback != null)
                 {
@@ -254,7 +254,7 @@ public class PlayFabHelper : MonoBehaviour
         });
     }
 
-    public void CompleteGame(int level, int finalScore, string[] itemUsed, System.Action<ExecuteCloudScriptResult> callback = null)
+    public void CompleteGame(int level, int finalScore, Dictionary<string,int> item_used, System.Action<ExecuteCloudScriptResult> callback = null)
     {
 
         ExecuteAfterAuthenticate(() =>
@@ -268,7 +268,7 @@ public class PlayFabHelper : MonoBehaviour
                 {
                     currentPlayLevel = level,
                     score = finalScore,
-                    usedItems = itemUsed,
+                    usedItems = item_used,
                 }
             },
             (ExecuteCloudScriptResult result) =>

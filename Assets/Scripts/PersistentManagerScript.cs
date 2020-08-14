@@ -10,7 +10,9 @@ public class PersistentManagerScript : MonoBehaviour
 
     public int score;
 
-    public List<string> item_used;
+    public Dictionary<string,int> item_used;
+
+    public List<Item> player_inventory;
 
     public Character selected_character;
 
