@@ -20,6 +20,7 @@ public class EnemyController : MonoBehaviour
     public int attack;
     public int defense;
     public int max_health;
+    public float doge_rate = 0.1f;
 
     public float h;
 
@@ -29,13 +30,15 @@ public class EnemyController : MonoBehaviour
     public GameController game_controller;
     const float MOVE_THRE = 2f;
 
+    private float next_action;
+
     // Start is called before the first frame update
     void Start()
     {
         health = max_health;
         rb = GetComponent<Rigidbody>();
         anime = GetComponent<Animator>();
-
+        next_action = Time.time;
     }
 
     // Update is called once per frame
@@ -43,25 +46,20 @@ public class EnemyController : MonoBehaviour
     {
         h = player.position.x - transform.position.x;
 
+        if (Time.time > next_action)
+        {
 
-        if (Math.Abs( h) > MOVE_THRE)
-        {
-            MoveForward(h);
-            anime.SetBool("walk", true);
-        }
-        else
-        {
-            anime.SetBool("walk", false);
-            if (player_animator.GetCurrentAnimatorStateInfo(0).IsName("punch"))
+            if (Math.Abs( h) > MOVE_THRE)
             {
-                anime.ResetTrigger("attack");
-                FlyForward();
+                MoveForward(h);
+                anime.SetBool("walk", true);
             }
             else
             {
+                anime.SetBool("walk", false);
+                    anime.SetTrigger("attack");
                 anime.ResetTrigger("fly");
-                anime.ResetTrigger("fly_back");
-                anime.SetTrigger("attack");
+                next_action += 1.5f;
             }
         }
     }
@@ -80,7 +78,7 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    void Attack()
+    void Attack(int a)
     {
 
         Collider[] hit_enemies = Physics.OverlapSphere(transform.position, attackRange, player_layer);
@@ -90,7 +88,7 @@ public class EnemyController : MonoBehaviour
             CustomCC.CharaterController e = enemy.GetComponent<CustomCC.CharaterController>();
             if (e != null)
             {
-                e.TakeDmg(this.attack);
+                e.TakeDmg(a*this.attack);
 
             }
         }
@@ -119,13 +117,24 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDmg(int attack)
     {
-        anime.SetTrigger("hit");
-        int dmg = attack - this.defense;
-        if (dmg < 0)
+        float rand = UnityEngine.Random.Range(0f, 1f);
+        Debug.Log(rand);
+        if ( rand> doge_rate)
         {
-            dmg = 0;
+
+            anime.SetTrigger("hit");
+            int dmg = attack - this.defense;
+            if (dmg < 0)
+            {
+                dmg = 0;
+            }
+            health -= dmg;
+            game_controller.AddScore(dmg);
         }
-        health -= dmg;
-        game_controller.AddScore(dmg);
+        else
+        {
+            anime.SetTrigger("fly");
+            anime.ResetTrigger("attack");
+        }
     }
 }
