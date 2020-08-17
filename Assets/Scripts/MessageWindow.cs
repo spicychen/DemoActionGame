@@ -24,6 +24,7 @@ public class MessageWindow: MonoBehaviour
         message.text = msg;
         ok_button.gameObject.GetComponentInChildren<Text>().text = button_text;
         UnityAction on_click_function = () => { if(button_callback!=null)button_callback.Invoke(); message_window.SetActive(false); };
+        ok_button.onClick.RemoveAllListeners();
         ok_button.onClick.AddListener(on_click_function);
         message_window.SetActive(true);
     }
@@ -32,6 +33,7 @@ public class MessageWindow: MonoBehaviour
     {
         success_msg.text = msg;
         success_button.gameObject.GetComponentInChildren<Text>().text = button_text;
+        success_button.onClick.RemoveAllListeners();
         success_button.onClick.AddListener(() => { success_window.SetActive(false); });
         success_window.SetActive(true);
     }

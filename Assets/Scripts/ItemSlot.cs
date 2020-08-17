@@ -48,6 +48,7 @@ public class ItemSlot : MonoBehaviour
 
     public void SetClickable(string msg,System.Action callback=null, string button_text = "OK")
     {
+        item_button.onClick.RemoveAllListeners();
         item_button.onClick.AddListener(()=> {
             MessageWindow mw = FindObjectOfType<MessageWindow>();
             if (mw != null)

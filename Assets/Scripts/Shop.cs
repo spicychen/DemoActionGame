@@ -58,6 +58,7 @@ public class Shop : MonoBehaviour
                 string message = String.Format("{0} will cost {1} gold",converted_items[x].name, converted_items[x].price_gold);
                 itemSlots[x].SetClickable(message, 
                     ()=> {
+                        Debug.LogFormat("purcharse: {0}", item_id);
                         playFabHelper.PurchaseItem(
                 new PurchaseItemRequest
                 {
