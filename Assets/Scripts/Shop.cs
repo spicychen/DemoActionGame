@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using PlayFab;
 using PlayFab.ClientModels;
 using System;
 using UnityEngine.UI;
@@ -69,7 +70,12 @@ public class Shop : MonoBehaviour
                 (PurchaseItemResult result) =>
                 {
                     FindObjectOfType<MessageWindow>().ShowSuccess("Purchase successful");
-                });
+                },
+                (PlayFabError err) =>
+                {
+                    FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+                }
+                );
                     },
                     "Yes");
             }

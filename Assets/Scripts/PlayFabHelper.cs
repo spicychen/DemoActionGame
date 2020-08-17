@@ -122,6 +122,43 @@ public class PlayFabHelper : MonoBehaviour
         });
     }
 
+    public void GetPlayerCombinedInfo(System.Action<GetPlayerCombinedInfoResult> callback = null, System.Action<PlayFabError> error_callback = null)
+    {
+        ExecuteAfterAuthenticate(() =>
+        {
+            PlayFabClientAPI.GetPlayerCombinedInfo(new GetPlayerCombinedInfoRequest
+            {
+                InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+                {
+                    //GetUserAccountInfo = true,
+                    GetPlayerProfile = true,
+                    GetUserInventory = true,
+                    GetUserVirtualCurrency = true,
+                    GetCharacterList = true,
+                    ProfileConstraints = new PlayerProfileViewConstraints
+                    {
+                        ShowAvatarUrl = true,
+                        ShowDisplayName = true
+                    }
+                }
+            },
+            (GetPlayerCombinedInfoResult result) =>
+            {
+                if(callback!=null)
+                callback.Invoke(result);
+            },
+            (PlayFabError err) =>
+            {
+                if (error_callback != null)
+                {
+                    error_callback.Invoke(err);
+                }
+                LogError(err);
+            }
+            );
+        });
+    }
+
     public void GetPlayerProfile(System.Action<GetPlayerProfileResult> callback = null)
     {
         ExecuteAfterAuthenticate(() =>
@@ -181,7 +218,7 @@ public class PlayFabHelper : MonoBehaviour
     }
 
 
-    public void PurchaseItem(PurchaseItemRequest request, System.Action<PurchaseItemResult> callback = null)
+    public void PurchaseItem(PurchaseItemRequest request, System.Action<PurchaseItemResult> callback = null, System.Action<PlayFabError> error_callback = null)
     {
         ExecuteAfterAuthenticate(() =>
         {
@@ -193,7 +230,15 @@ public class PlayFabHelper : MonoBehaviour
                     callback.Invoke(result);
                 }
             },
-            LogError
+
+            (PlayFabError err) =>
+            {
+                if (error_callback != null)
+                {
+                    error_callback.Invoke(err);
+                }
+                LogError(err);
+            }
             );
         });
     }

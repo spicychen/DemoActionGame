@@ -89,23 +89,48 @@ public class MenuManager : MonoBehaviour
 
     private void OnExpandClicked()
     {
-        playFabHelper.GetPlayerInventory(
-            (GetUserInventoryResult result) =>
-            {
-                player_profile.player_inventory = Item.ConvertToItems(result.Inventory);
-                player_profile.SetItems();
-                player_profile.player_fighting_points = result.VirtualCurrency["FP"];
-                player_profile.player_gold = result.VirtualCurrency["GD"];
-                player_profile_animator.SetTrigger("drag");
-            }
-            );
-        playFabHelper.GetPlayerCharacters(
-            (ListUsersCharactersResult result) =>
-            {
-                player_profile.player_characters = Character.ConvertToCharacters(result.Characters);
-                player_profile.SetCharacters();
-            }
-            );
+        playFabHelper.GetPlayerCombinedInfo((GetPlayerCombinedInfoResult result) =>
+        {
+            //update avatar and name
+            StartCoroutine(SetImage(result.InfoResultPayload.PlayerProfile.AvatarUrl));
+            player_name.text = result.InfoResultPayload.PlayerProfile.DisplayName;
+            player_profile.player_name = result.InfoResultPayload.PlayerProfile.DisplayName;
+            player_profile.player_avatar_url = result.InfoResultPayload.PlayerProfile.AvatarUrl;
+
+            //update player inventory
+            player_profile.player_inventory = Item.ConvertToItems(result.InfoResultPayload.UserInventory);
+            player_profile.SetItems();
+            player_profile.player_fighting_points = result.InfoResultPayload.UserVirtualCurrency["FP"];
+            player_profile.player_gold = result.InfoResultPayload.UserVirtualCurrency["GD"];
+            player_profile_animator.SetTrigger("drag");
+
+            //update player characters
+
+            player_profile.player_characters = Character.ConvertToCharacters(result.InfoResultPayload.CharacterList);
+            player_profile.SetCharacters();
+        },
+        (PlayFabError err) =>
+        {
+            FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+        }
+        );
+        //playFabHelper.GetPlayerInventory(
+        //    (GetUserInventoryResult result) =>
+        //    {
+        //        player_profile.player_inventory = Item.ConvertToItems(result.Inventory);
+        //        player_profile.SetItems();
+        //        player_profile.player_fighting_points = result.VirtualCurrency["FP"];
+        //        player_profile.player_gold = result.VirtualCurrency["GD"];
+        //        player_profile_animator.SetTrigger("drag");
+        //    }
+        //    );
+        //playFabHelper.GetPlayerCharacters(
+        //    (ListUsersCharactersResult result) =>
+        //    {
+        //        player_profile.player_characters = Character.ConvertToCharacters(result.Characters);
+        //        player_profile.SetCharacters();
+        //    }
+        //    );
     }
 
     private void OnShrinkClicked()
@@ -139,7 +164,7 @@ public class MenuManager : MonoBehaviour
                 PersistentManagerScript.Instance.player_inventory = Item.ConvertToItems(result.Inventory);
 
             });
-        }
+    }
 
     //private void OnCharacterButtonClicked(int i_character)
     //{
