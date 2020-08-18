@@ -112,15 +112,24 @@ public class PlayerProfile : MonoBehaviour
                                 {
                                     FindObjectOfType<MessageWindow>().ShowSuccess("Redeem successful");
 
-                                    playFabHelper.GetPlayerInventory(
-                                        (GetUserInventoryResult result) =>
-                                        {
-                                            this.player_inventory = Item.ConvertToItems(result.Inventory);
-                                            this.SetItems();
-                                            this.player_fighting_points = result.VirtualCurrency["FP"];
-                                            this.player_gold = result.VirtualCurrency["GD"];
-                                        }
-                                        );
+                                    playFabHelper.GetPlayerCombinedInfo((GetPlayerCombinedInfoResult result) =>
+                                    {
+                                        //update player inventory
+                                        this.player_inventory = Item.ConvertToItems(result.InfoResultPayload.UserInventory);
+                                        this.SetItems();
+                                        this.player_fighting_points = result.InfoResultPayload.UserVirtualCurrency["FP"];
+                                        this.player_gold = result.InfoResultPayload.UserVirtualCurrency["GD"];
+
+                                        //update player characters
+
+                                        this.player_characters = Character.ConvertToCharacters(result.InfoResultPayload.CharacterList);
+                                        this.SetCharacters();
+                                    },
+                                    (PlayFabError err) =>
+                                    {
+                                        FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+                                    }
+                                    );
                                 },
                                 (PlayFabError err) =>
                                 {

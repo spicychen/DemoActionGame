@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using PlayFab;
 using PlayFab.ClientModels;
+using System.Text;
+using UnityEngine.Networking;
+using UnityEditor.PackageManager.Requests;
 
 public class MenuManager : MonoBehaviour
 {
@@ -17,6 +20,8 @@ public class MenuManager : MonoBehaviour
     public Button shrink_button;
     public InputField convert_amount;
     public Button convert_button;
+
+    public Button open_gift;
 
     public GameObject levels_panel;
     public GameObject characters_panel;
@@ -40,7 +45,9 @@ public class MenuManager : MonoBehaviour
     void Start()
     {
         convert_button.onClick.AddListener(ConvertFPToGD);
+        open_gift.onClick.AddListener(OnOpenGiftClicked);
 
+        open_gift.gameObject.SetActive(false);
         levels_panel.SetActive(false);
         characters_panel.SetActive(false);
         shop_panel.SetActive(false);
@@ -64,27 +71,85 @@ public class MenuManager : MonoBehaviour
 
     private void OnMainMenuLoad()
     {
-        playFabHelper.GetPlayerProfile((GetPlayerProfileResult result) => {
-            StartCoroutine(SetImage(result.PlayerProfile.AvatarUrl));
-            player_name.text = result.PlayerProfile.DisplayName;
-            player_profile.player_name = result.PlayerProfile.DisplayName;
-            player_profile.player_avatar_url = result.PlayerProfile.AvatarUrl;
-        });
+        //playFabHelper.GetPlayerProfile((GetPlayerProfileResult result) => {
+        //    StartCoroutine(SetImage(result.PlayerProfile.AvatarUrl));
+        //    player_name.text = result.PlayerProfile.DisplayName;
+        //    player_profile.player_name = result.PlayerProfile.DisplayName;
+        //    player_profile.player_avatar_url = result.PlayerProfile.AvatarUrl;
+        //});
+
+        playFabHelper.GetPlayerCombinedInfo((GetPlayerCombinedInfoResult result) =>
+        {
+            //update avatar and name
+            StartCoroutine(SetImage(result.InfoResultPayload.PlayerProfile.AvatarUrl));
+            player_name.text = result.InfoResultPayload.PlayerProfile.DisplayName;
+            player_profile.player_name = result.InfoResultPayload.PlayerProfile.DisplayName;
+            player_profile.player_avatar_url = result.InfoResultPayload.PlayerProfile.AvatarUrl;
+
+            foreach( ItemInstance i_i in result.InfoResultPayload.UserInventory)
+            {
+                if(i_i.ItemId == "newbee_gift")
+                {
+                    open_gift.gameObject.SetActive(true);
+                    break;
+                }
+            }
+        },
+        (PlayFabError err) =>
+        {
+            FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+        }
+        );
     }
 
     IEnumerator SetImage(string url)
     {
-        WWW www = new WWW(url);
-        yield return www;
+        //WWW www = new WWW(url);
+        //yield return www;
 
-        Texture2D texture = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
-        www.LoadImageIntoTexture(texture);
-        player_avatar.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
 
-        //player_avatar.material.mainTexture = www.texture;
-        //www.LoadImageIntoTexture(player_avatar);
-        www.Dispose();
-        www = null;
+        //www.LoadImageIntoTexture(texture);
+        //player_avatar.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+
+        ////player_avatar.material.mainTexture = www.texture;
+        ////www.LoadImageIntoTexture(player_avatar);
+        //www.Dispose();
+        //www = null;
+        if (!string.IsNullOrEmpty(url))
+        {
+
+            UnityWebRequest unityWebRequest = UnityWebRequestTexture.GetTexture(url);
+            yield return unityWebRequest.SendWebRequest();
+            if(unityWebRequest.isNetworkError || unityWebRequest.isHttpError)
+            {
+                Debug.LogError(unityWebRequest.error);
+            }
+            else
+            {
+                Texture2D texture = ((DownloadHandlerTexture)unityWebRequest.downloadHandler).texture;
+                player_avatar.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            }
+        }
+    }
+
+    private void OnOpenGiftClicked()
+    {
+
+        playFabHelper.OpenGift((UnlockContainerItemResult result) =>
+        {
+            StringBuilder sb = new StringBuilder("You Received: ",200);
+            foreach(ItemInstance i_i in result.GrantedItems)
+            {
+                sb.AppendFormat("\n{0} ",i_i.DisplayName);
+            }
+            open_gift.gameObject.SetActive(false);
+            FindObjectOfType<MessageWindow>().ShowSuccess(sb.ToString());
+        },
+        (PlayFabError err) =>
+        {
+            FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+        }
+        );
     }
 
     private void OnExpandClicked()

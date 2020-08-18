@@ -159,6 +159,31 @@ public class PlayFabHelper : MonoBehaviour
         });
     }
 
+    public void OpenGift(System.Action<UnlockContainerItemResult> callback = null, System.Action<PlayFabError> error_callback = null)
+    {
+        ExecuteAfterAuthenticate(() =>
+        {
+            PlayFabClientAPI.UnlockContainerItem(new UnlockContainerItemRequest
+            {
+                ContainerItemId = "newbee_gift"
+            },
+            (UnlockContainerItemResult result) =>
+            {
+                if (callback != null)
+                    callback.Invoke(result);
+            },
+            (PlayFabError err) =>
+            {
+                if (error_callback != null)
+                {
+                    error_callback.Invoke(err);
+                }
+                LogError(err);
+            }
+            );
+        });
+    }
+
     public void GetPlayerProfile(System.Action<GetPlayerProfileResult> callback = null)
     {
         ExecuteAfterAuthenticate(() =>
