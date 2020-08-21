@@ -7,7 +7,6 @@ using PlayFab.ClientModels;
 using System;
 using Facebook.Unity;
 using LoginResult = PlayFab.ClientModels.LoginResult;
-using UnityEditor.PackageManager;
 
 public enum Authtypes
 {

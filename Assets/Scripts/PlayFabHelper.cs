@@ -158,6 +158,32 @@ public class PlayFabHelper : MonoBehaviour
             );
         });
     }
+    
+
+    public void ChangeAvatar(string url, System.Action callback = null, System.Action<PlayFabError> error_callback = null)
+    {
+        ExecuteAfterAuthenticate(() =>
+        {
+            PlayFabClientAPI.UpdateAvatarUrl(new UpdateAvatarUrlRequest
+            {
+                ImageUrl = url
+            },
+            (EmptyResponse result) =>
+            {
+                if (callback != null)
+                    callback.Invoke();
+            },
+            (PlayFabError err) =>
+            {
+                if (error_callback != null)
+                {
+                    error_callback.Invoke(err);
+                }
+                LogError(err);
+            }
+            );
+        });
+    }
 
     public void OpenGift(System.Action<UnlockContainerItemResult> callback = null, System.Action<PlayFabError> error_callback = null)
     {

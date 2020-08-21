@@ -6,7 +6,6 @@ using PlayFab;
 using PlayFab.ClientModels;
 using System.Text;
 using UnityEngine.Networking;
-using UnityEditor.PackageManager.Requests;
 
 public class MenuManager : MonoBehaviour
 {
@@ -16,6 +15,7 @@ public class MenuManager : MonoBehaviour
 
     public Button shop_button;
     public Button leaderboard_button;
+    public Button help_button;
     public Button expand_button;
     public Button shrink_button;
     public InputField convert_amount;
@@ -27,6 +27,7 @@ public class MenuManager : MonoBehaviour
     public GameObject characters_panel;
     public GameObject shop_panel;
     public GameObject leaderboard_panel;
+    public GameObject help_panel;
 
     public Animator player_profile_animator;
 
@@ -52,6 +53,7 @@ public class MenuManager : MonoBehaviour
         characters_panel.SetActive(false);
         shop_panel.SetActive(false);
         leaderboard_panel.SetActive(false);
+        help_panel.SetActive(false);
 
         start_game.onClick.AddListener(OnStartGameClicked);
         for(int i=0; i<level_selection.Length; i++)
@@ -63,6 +65,7 @@ public class MenuManager : MonoBehaviour
 
         shop_button.onClick.AddListener(OnShopButtonClicked);
         leaderboard_button.onClick.AddListener(OnLeaderboardButtonClicked);
+        help_button.onClick.AddListener(OnHelpButtonClicked);
         expand_button.onClick.AddListener(OnExpandClicked);
         shrink_button.onClick.AddListener(OnShrinkClicked);
 
@@ -257,6 +260,12 @@ public class MenuManager : MonoBehaviour
                 leaderboard.SetRows(result.Leaderboard, w_result.Leaderboard);
             }
             );
+    }
+    
+
+    private void OnHelpButtonClicked()
+    {
+        help_panel.SetActive(true);
     }
 
     public void ConvertFPToGD()
