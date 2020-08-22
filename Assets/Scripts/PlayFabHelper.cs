@@ -184,6 +184,32 @@ public class PlayFabHelper : MonoBehaviour
             );
         });
     }
+    
+
+    public void ChangeName(string name, System.Action<UpdateUserTitleDisplayNameResult> callback = null, System.Action<PlayFabError> error_callback = null)
+    {
+        ExecuteAfterAuthenticate(() =>
+        {
+            PlayFabClientAPI.UpdateUserTitleDisplayName(new UpdateUserTitleDisplayNameRequest
+            {
+                DisplayName = name
+            },
+            (UpdateUserTitleDisplayNameResult result) =>
+            {
+                if (callback != null)
+                    callback.Invoke(result);
+            },
+            (PlayFabError err) =>
+            {
+                if (error_callback != null)
+                {
+                    error_callback.Invoke(err);
+                }
+                LogError(err);
+            }
+            );
+        });
+    }
 
     public void OpenGift(System.Action<UnlockContainerItemResult> callback = null, System.Action<PlayFabError> error_callback = null)
     {

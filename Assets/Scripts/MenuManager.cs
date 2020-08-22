@@ -6,6 +6,7 @@ using PlayFab;
 using PlayFab.ClientModels;
 using System.Text;
 using UnityEngine.Networking;
+using System;
 
 public class MenuManager : MonoBehaviour
 {
@@ -20,6 +21,12 @@ public class MenuManager : MonoBehaviour
     public Button shrink_button;
     public InputField convert_amount;
     public Button convert_button;
+    public Button open_avatar_button;
+    public Button open_name_button;
+    public InputField avatar_url;
+    public InputField changed_name;
+    public Button change_avatar_button;
+    public Button change_name_button;
 
     public Button open_gift;
 
@@ -28,6 +35,9 @@ public class MenuManager : MonoBehaviour
     public GameObject shop_panel;
     public GameObject leaderboard_panel;
     public GameObject help_panel;
+    public GameObject change_avatar_panel;
+    public GameObject change_name_panel;
+
 
     public Animator player_profile_animator;
 
@@ -47,6 +57,8 @@ public class MenuManager : MonoBehaviour
     {
         convert_button.onClick.AddListener(ConvertFPToGD);
         open_gift.onClick.AddListener(OnOpenGiftClicked);
+        change_avatar_button.onClick.AddListener(OnChangeAvatarClicked);
+        change_name_button.onClick.AddListener(OnChangeNameClicked);
 
         open_gift.gameObject.SetActive(false);
         levels_panel.SetActive(false);
@@ -54,6 +66,8 @@ public class MenuManager : MonoBehaviour
         shop_panel.SetActive(false);
         leaderboard_panel.SetActive(false);
         help_panel.SetActive(false);
+        change_avatar_panel.SetActive(false);
+        change_name_panel.SetActive(false);
 
         start_game.onClick.AddListener(OnStartGameClicked);
         for(int i=0; i<level_selection.Length; i++)
@@ -68,8 +82,80 @@ public class MenuManager : MonoBehaviour
         help_button.onClick.AddListener(OnHelpButtonClicked);
         expand_button.onClick.AddListener(OnExpandClicked);
         shrink_button.onClick.AddListener(OnShrinkClicked);
+        open_avatar_button.onClick.AddListener(OnOpenAvatarClicked);
+        open_name_button.onClick.AddListener(OnOpenNameClicked);
 
         OnMainMenuLoad();
+    }
+
+    private void OnOpenNameClicked()
+    {
+        change_name_panel.SetActive(true);
+    }
+
+    private void OnOpenAvatarClicked()
+    {
+        change_avatar_panel.SetActive(true);
+    }
+
+    private void OnChangeNameClicked()
+    {
+        playFabHelper.ChangeName(changed_name.text, 
+            (UpdateUserTitleDisplayNameResult n_result) =>
+            {
+                FindObjectOfType<MessageWindow>().ShowSuccess("Update Successful");
+                change_name_panel.SetActive(false);
+                playFabHelper.GetPlayerCombinedInfo((GetPlayerCombinedInfoResult result) =>
+                {
+                    //update avatar and name
+                    StartCoroutine(SetImage(result.InfoResultPayload.PlayerProfile.AvatarUrl));
+                    player_name.text = result.InfoResultPayload.PlayerProfile.DisplayName;
+                    player_profile.player_name = result.InfoResultPayload.PlayerProfile.DisplayName;
+                    player_profile.player_avatar_url = result.InfoResultPayload.PlayerProfile.AvatarUrl;
+
+                },
+                (PlayFabError err) =>
+                {
+                    FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+                }
+                );
+            },
+                (PlayFabError err) =>
+                {
+                    FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+                }
+
+                    );
+    }
+
+    private void OnChangeAvatarClicked()
+    {
+        playFabHelper.ChangeAvatar(avatar_url.text,
+            () =>
+            {
+                FindObjectOfType<MessageWindow>().ShowSuccess("Update Successful");
+                change_avatar_panel.SetActive(false);
+                playFabHelper.GetPlayerCombinedInfo((GetPlayerCombinedInfoResult result) =>
+                {
+                    //update avatar and name
+                    StartCoroutine(SetImage(result.InfoResultPayload.PlayerProfile.AvatarUrl));
+                    player_name.text = result.InfoResultPayload.PlayerProfile.DisplayName;
+                    player_profile.player_name = result.InfoResultPayload.PlayerProfile.DisplayName;
+                    player_profile.player_avatar_url = result.InfoResultPayload.PlayerProfile.AvatarUrl;
+
+                },
+                (PlayFabError err) =>
+                {
+                    FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+                }
+                );
+            },
+                (PlayFabError err) =>
+                {
+                    FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
+                }
+
+                    );
     }
 
     private void OnMainMenuLoad()
@@ -97,6 +183,18 @@ public class MenuManager : MonoBehaviour
                     break;
                 }
             }
+
+            //update player inventory
+            player_profile.player_inventory = Item.ConvertToItems(result.InfoResultPayload.UserInventory);
+            player_profile.SetItems();
+            player_profile.player_fighting_points = result.InfoResultPayload.UserVirtualCurrency["FP"];
+            player_profile.player_gold = result.InfoResultPayload.UserVirtualCurrency["GD"];
+            //player_profile_animator.SetTrigger("drag");
+
+            //update player characters
+
+            player_profile.player_characters = Character.ConvertToCharacters(result.InfoResultPayload.CharacterList);
+            player_profile.SetCharacters();
         },
         (PlayFabError err) =>
         {
@@ -283,7 +381,7 @@ public class MenuManager : MonoBehaviour
                 FindObjectOfType<MessageWindow>().ShowSuccess(custom_result.message);
             }else if(custom_result.status == "NotEnoughFP")
             {
-                FindObjectOfType<MessageWindow>().ShowSuccess(custom_result.message);
+                FindObjectOfType<MessageWindow>().ShowSuccess("You don't have enough FP to Convert, Play Game and Gain FP");
             }
         });
     }

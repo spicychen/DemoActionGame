@@ -77,6 +77,11 @@ public class Shop : MonoBehaviour
                 },
                 (PlayFabError err) =>
                 {
+                    if(err.Error == PlayFabErrorCode.InsufficientFunds)
+                    {
+                        FindObjectOfType<MessageWindow>().ShowSuccess("You don't have enough gold, please convert FP to Gold");
+
+                    }else
                     FindObjectOfType<MessageWindow>().ShowSuccess(err.GenerateErrorReport());
                 }
                 );
